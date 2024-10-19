@@ -123,6 +123,12 @@ public class JdbcSinkConfig extends JdbcConfig {
             + "to the record schema by issuing ``ALTER``.";
     private static final String AUTO_EVOLVE_DISPLAY = "Auto-Evolve";
 
+    public static final String IGNORE_NOT_NULL_CONSTRAINTS = "ignore.notnull.constraints";
+    private static final String IGNORE_NOT_NULL_CONSTRAINTS_DEFAULT = "false";
+    private static final String IGNORE_NOT_NULL_CONSTRAINTS_DOC =
+            "Whether to ignore NOT NULL constraints when issuing ``CREATE`` or ``ALTER``";
+    private static final String IGNORE_NOT_NULL_CONSTRAINTS_DISPLAY = "Ignore NOT NULL constraints";
+
     public static final String INSERT_MODE = "insert.mode";
     private static final String INSERT_MODE_DEFAULT = "insert";
     private static final String INSERT_MODE_DOC =
@@ -353,7 +359,18 @@ public class JdbcSinkConfig extends JdbcConfig {
                 AUTO_EVOLVE_DOC, DDL_GROUP,
                 2,
                 ConfigDef.Width.SHORT,
-                AUTO_EVOLVE_DISPLAY);
+                AUTO_EVOLVE_DISPLAY
+            )
+            .define(
+                IGNORE_NOT_NULL_CONSTRAINTS,
+                ConfigDef.Type.BOOLEAN,
+                IGNORE_NOT_NULL_CONSTRAINTS_DEFAULT,
+                ConfigDef.Importance.MEDIUM,
+                IGNORE_NOT_NULL_CONSTRAINTS_DOC, DDL_GROUP,
+                3,
+                ConfigDef.Width.SHORT,
+                IGNORE_NOT_NULL_CONSTRAINTS_DISPLAY
+            );
 
         // Retries
         CONFIG_DEF
@@ -390,6 +407,7 @@ public class JdbcSinkConfig extends JdbcConfig {
     public final int retryBackoffMs;
     public final boolean autoCreate;
     public final boolean autoEvolve;
+    public final boolean ignoreNotNullConstraints;
     public final InsertMode insertMode;
     public final PrimaryKeyMode pkMode;
     public final List<String> pkFields;
@@ -407,6 +425,7 @@ public class JdbcSinkConfig extends JdbcConfig {
         retryBackoffMs = getInt(RETRY_BACKOFF_MS);
         autoCreate = getBoolean(AUTO_CREATE);
         autoEvolve = getBoolean(AUTO_EVOLVE);
+        ignoreNotNullConstraints = getBoolean(IGNORE_NOT_NULL_CONSTRAINTS);
         insertMode = InsertMode.valueOf(getString(INSERT_MODE).toUpperCase());
         pkMode = PrimaryKeyMode.valueOf(getString(PK_MODE).toUpperCase());
         pkFields = getList(PK_FIELDS);

@@ -63,6 +63,7 @@ public class FieldsMetadata {
         final JdbcSinkConfig.PrimaryKeyMode pkMode,
         final List<String> configuredPkFields,
         final Set<String> fieldsWhitelist,
+        final boolean ignoreNotNullConstraints,
         final SchemaPair schemaPair
     ) {
         return extract(
@@ -70,6 +71,7 @@ public class FieldsMetadata {
             pkMode,
             configuredPkFields,
             fieldsWhitelist,
+            ignoreNotNullConstraints,
             schemaPair.keySchema,
             schemaPair.valueSchema
         );
@@ -80,6 +82,7 @@ public class FieldsMetadata {
         final JdbcSinkConfig.PrimaryKeyMode pkMode,
         final List<String> configuredPkFields,
         final Set<String> fieldsWhitelist,
+        final boolean ignoreNotNullConstraints,
         final Schema keySchema,
         final Schema valueSchema
     ) {
@@ -123,7 +126,10 @@ public class FieldsMetadata {
                 nonKeyFieldNames.add(field.name());
 
                 final Schema fieldSchema = field.schema();
-                allFields.put(field.name(), new SinkRecordField(fieldSchema, field.name(), false));
+                allFields.put(
+                    field.name(),
+                    new SinkRecordField(fieldSchema, field.name(), false, ignoreNotNullConstraints)
+                );
             }
         }
 
@@ -186,17 +192,17 @@ public class FieldsMetadata {
         final String topicFieldName = it.next();
         allFields.put(
             topicFieldName,
-            new SinkRecordField(Schema.STRING_SCHEMA, topicFieldName, true)
+            new SinkRecordField(Schema.STRING_SCHEMA, topicFieldName, true, false)
         );
         final String partitionFieldName = it.next();
         allFields.put(
             partitionFieldName,
-            new SinkRecordField(Schema.INT32_SCHEMA, partitionFieldName, true)
+            new SinkRecordField(Schema.INT32_SCHEMA, partitionFieldName, true, false)
         );
         final String offsetFieldName = it.next();
         allFields.put(
             offsetFieldName,
-            new SinkRecordField(Schema.INT64_SCHEMA, offsetFieldName, true)
+            new SinkRecordField(Schema.INT64_SCHEMA, offsetFieldName, true, false)
         );
     }
 
@@ -226,7 +232,7 @@ public class FieldsMetadata {
                 }
                 final String fieldName = configuredPkFields.get(0);
                 keyFieldNames.add(fieldName);
-                allFields.put(fieldName, new SinkRecordField(keySchema, fieldName, true));
+                allFields.put(fieldName, new SinkRecordField(keySchema, fieldName, true, false));
             } else if (keySchemaType == Schema.Type.STRUCT) {
                 if (configuredPkFields.isEmpty()) {
                     for (final Field keyField : keySchema.fields()) {
@@ -247,7 +253,7 @@ public class FieldsMetadata {
                 }
                 for (final String fieldName : keyFieldNames) {
                     final Schema fieldSchema = keySchema.field(fieldName).schema();
-                    allFields.put(fieldName, new SinkRecordField(fieldSchema, fieldName, true));
+                    allFields.put(fieldName, new SinkRecordField(fieldSchema, fieldName, true, false));
                 }
             } else {
                 throw new ConnectException(
@@ -289,7 +295,7 @@ public class FieldsMetadata {
         }
         for (final String fieldName : keyFieldNames) {
             final Schema fieldSchema = valueSchema.field(fieldName).schema();
-            allFields.put(fieldName, new SinkRecordField(fieldSchema, fieldName, true));
+            allFields.put(fieldName, new SinkRecordField(fieldSchema, fieldName, true, false));
         }
     }
 

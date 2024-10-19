@@ -26,11 +26,18 @@ public class SinkRecordField {
     private final Schema schema;
     private final String name;
     private final boolean isPrimaryKey;
+    private final boolean ignoreNotNullConstraints;
 
-    public SinkRecordField(final Schema schema, final String name, final boolean isPrimaryKey) {
+    public SinkRecordField(
+        final Schema schema,
+        final String name,
+        final boolean isPrimaryKey,
+        final boolean ignoreNotNullConstraints
+    ) {
         this.schema = schema;
         this.name = name;
         this.isPrimaryKey = isPrimaryKey;
+        this.ignoreNotNullConstraints = ignoreNotNullConstraints;
     }
 
     public Schema schema() {
@@ -54,7 +61,7 @@ public class SinkRecordField {
     }
 
     public boolean isOptional() {
-        return !isPrimaryKey && schema.isOptional();
+        return !isPrimaryKey && (schema.isOptional() || ignoreNotNullConstraints);
     }
 
     public Object defaultValue() {
